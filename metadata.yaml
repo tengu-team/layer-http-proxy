@@ -1,0 +1,15 @@
+name: http-proxy
+summary: this is a proxy service for an http endpoint
+maintainer: Gregory Van Seghbroeck <gregory.vanseghbroeck@ugent.be>
+description: |
+  This charm acts as a proxy for an http endpoint, external or internal to the
+  model. It will makes it possible to create relationships between charmed 
+  services and un-charmed services.
+tags:
+  - network
+  - web_server
+subordinate: false
+provides:
+  endpoint:
+    interface: http
+series: ['xenial']

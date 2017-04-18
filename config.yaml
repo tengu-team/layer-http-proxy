@@ -1,0 +1,12 @@
+options:
+  host:
+    type: string
+    default: "localhost"
+    description: |
+      This charm will act as a proxy for this host. It can be an external http endpoint as well.
+      Default value is the localhost. 
+  port:
+    type: int
+    default: 80
+    description: |
+      The port of the http endpoint used by this proxy. Default value is port 80.
