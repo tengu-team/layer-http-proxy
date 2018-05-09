@@ -6,7 +6,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo 'Test' 
+                echo 'Test'
+                charm version
             }
         }
     }
