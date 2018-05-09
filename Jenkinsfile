@@ -1,6 +1,8 @@
 pipeline {
-    agent any
-
+    agent {
+        docker { image 'jujusolutions/charmbox' }
+    }
+    
     stages {
         stage('Build') {
             steps {
