@@ -16,9 +16,10 @@
 
 
 from charmhelpers.core import hookenv
-from charmhelpers.core.hookenv import status_set, log, unit_private_ip, open_port, close_port
+from charmhelpers.core.hookenv import status_set, log, open_port, close_port
 
 from charms.reactive import when, when_not, set_state, remove_state
+
 
 @when_not('endpoint.available')
 def no_service_connected():
@@ -29,6 +30,7 @@ def no_service_connected():
         'blocked',
         'Please connect the http proxy charm to a client service.')
 
+
 @when('endpoint.available')
 def configure_endpoint_relationship(endpoint_relation):
     log('Client connected.')
@@ -36,7 +38,7 @@ def configure_endpoint_relationship(endpoint_relation):
     conf = hookenv.config()
     host = conf.get('host')
     if host == "localhost" or host == "127.0.0.1":
-        host = unit_private_ip()
+        host = get_ingress_address(endpoint_relation)
     port = conf.get('port')
 
     endpoint_relation.configure(
@@ -49,8 +51,23 @@ def configure_endpoint_relationship(endpoint_relation):
     status_set('active', 'Ready (http://{}:{})'.format(host, port))
     set_state('http-proxy.ready')
 
+
 @when('endpoint.available', 'config.changed')
 def config_changed(endpoint_relation):
     log('Config changed.')
     configure_endpoint_relationship(endpoint_relation)
 
+
+def get_ingress_address(relation):
+    try:
+        network_info = hookenv.network_get(relation.relation_name)
+    except NotImplementedError:
+        network_info = []
+
+    if network_info and 'ingress-addresses' in network_info:
+        # just grab the first one for now, maybe be more robust here?
+        return network_info['ingress-addresses'][0]
+    else:
+        # if they don't have ingress-addresses they are running a juju that
+        # doesn't support spaces, so just return the private address
+        return hookenv.unit_get('private-address')
