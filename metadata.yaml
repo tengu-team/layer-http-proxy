@@ -10,6 +10,6 @@ tags:
   - web_server
 subordinate: false
 provides:
-  endpoint:
+  http:
     interface: http
 series: ['xenial']

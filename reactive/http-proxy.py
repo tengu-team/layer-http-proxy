@@ -18,22 +18,23 @@
 from charmhelpers.core import hookenv
 from charmhelpers.core.hookenv import status_set, log, open_port, close_port
 
-from charms.reactive import when, when_not, set_state, remove_state
+from charms.reactive import when, when_not, set_flag, clear_flag, endpoint_from_flag
 
 
-@when_not('endpoint.available')
+@when_not('endpoint.http.joined')
 def no_service_connected():
     log('No client connected.')
-    remove_state('http-proxy.ready')
+    clear_flag('http-proxy.ready')
     close_port(hookenv.config().get('port'))
     status_set(
         'blocked',
         'Please connect the http proxy charm to a client service.')
 
 
-@when('endpoint.available')
-def configure_endpoint_relationship(endpoint_relation):
+@when('endpoint.http.joined')
+def configure_endpoint_relationship():
     log('Client connected.')
+    endpoint_relation = endpoint_from_flag('endpoint.http.joined')
 
     conf = hookenv.config()
     host = conf.get('host')
@@ -49,13 +50,13 @@ def configure_endpoint_relationship(endpoint_relation):
     open_port(port)
 
     status_set('active', 'Ready (http://{}:{})'.format(host, port))
-    set_state('http-proxy.ready')
+    set_flag('http-proxy.ready')
 
 
-@when('endpoint.available', 'config.changed')
-def config_changed(endpoint_relation):
+@when('endpoint.http.joined', 'config.changed')
+def config_changed():
     log('Config changed.')
-    configure_endpoint_relationship(endpoint_relation)
+    configure_endpoint_relationship()
 
 
 def get_ingress_address(relation):
